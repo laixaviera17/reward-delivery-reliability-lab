@@ -56,5 +56,5 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: pip install -r requirements.txt
       - run: celery -A app.task_queue.celery_app worker --loglevel=INFO --concurrency=4 &
-      - run: sleep 5
+      - run: python scripts/wait_for_worker.py
       - run: pytest -q -m integration

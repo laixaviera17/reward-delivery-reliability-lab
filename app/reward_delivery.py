@@ -6,7 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from .database import connect, initialize_database
-from .outbox import list_pending_outbox_orders
+from .outbox import claim_pending_outbox_order, list_pending_outbox_orders, release_outbox_claim
 from .reliability_events import record_reliability_event, utc_now
 from .reliability_scenarios import REWARD_GEMS
 
@@ -75,10 +75,6 @@ def deliver_reward_once(run_id: int, order_id: str, *, lose_acknowledgement: boo
                 text("SELECT entry_id FROM delivery_wallet_ledger WHERE order_id = :order_id"),
                 {"order_id": order_id},
             ).scalar_one_or_none()
-            connection.execute(
-                text("UPDATE delivery_outbox_events SET attempt_count = attempt_count + 1 WHERE order_id = :order_id"),
-                {"order_id": order_id},
-            )
             if ledger_exists:
                 _complete_delivery(connection, order_id)
                 outcome = "duplicate_consumer"
@@ -99,13 +95,13 @@ def deliver_reward_once(run_id: int, order_id: str, *, lose_acknowledgement: boo
                     outcome = "effect_applied"
     except IntegrityError:
         with connect() as connection:
-            connection.execute(
-                text("UPDATE delivery_outbox_events SET attempt_count = attempt_count + 1 WHERE order_id = :order_id"),
-                {"order_id": order_id},
-            )
             _complete_delivery(connection, order_id)
         outcome = "duplicate_consumer"
+    except Exception:
+        release_outbox_claim(order_id)
+        raise
     if outcome == "acknowledgement_lost":
+        release_outbox_claim(order_id)
         record_reliability_event(run_id, "retry", "账本已提交，但模拟确认丢失；Outbox 仍为 pending 并等待再次轮询", order_id=order_id)
     elif outcome == "duplicate_consumer":
         record_reliability_event(run_id, "dedupe", "检测到已存在账本流水，跳过余额变更并完成事件", order_id=order_id)
@@ -115,13 +111,13 @@ def deliver_reward_once(run_id: int, order_id: str, *, lose_acknowledgement: boo
 
 
 def poll_outbox_event(run_id: int, *, lose_acknowledgement: bool = False, task_id: str | None = None) -> str:
-    """Scan this run's pending Outbox events and attempt delivery of the first one."""
-    pending = list_pending_outbox_orders(run_id)
-    if not pending:
-        record_reliability_event(run_id, "poll", "Outbox 轮询未发现待消费事件", task_id=task_id)
+    """Claim then consume one event, so concurrent pollers cannot both own it."""
+    order_id = claim_pending_outbox_order(run_id)
+    if order_id is None:
+        record_reliability_event(run_id, "poll", "Outbox 轮询未发现可领取的待消费事件", task_id=task_id)
         return "no_pending_event"
-    order_id = pending[0]
-    record_reliability_event(run_id, "poll", "Outbox 轮询发现待消费事件", order_id=order_id, pending_count=len(pending), task_id=task_id)
+    record_reliability_event(run_id, "poll", "Outbox 轮询发现并领取待消费事件", order_id=order_id, pending_count=1, task_id=task_id)
+    record_reliability_event(run_id, "claim", "Outbox 轮询通过条件更新领取待消费事件", order_id=order_id, task_id=task_id)
     return deliver_reward_once(run_id, order_id, lose_acknowledgement=lose_acknowledgement, task_id=task_id)
 
 

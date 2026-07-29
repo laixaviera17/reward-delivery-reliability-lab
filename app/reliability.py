@@ -15,7 +15,7 @@ from .database import connect, get_engine, initialize_database
 from .reliability_events import record_reliability_event, utc_now
 from .reliability_reports import finish_reliability_run, get_reliability_run, list_reliability_runs, mark_run_failed, reliability_trend
 from .reliability_scenarios import SCENARIOS, available_reliability_scenarios
-from .reward_delivery import create_experiment_player, deliver_reward_once, deliver_without_ledger_guard, pending_outbox_order_for_run, poll_outbox_event, request_reward
+from .reward_delivery import create_experiment_player, deliver_without_ledger_guard, poll_outbox_event, request_reward
 
 
 def create_reliability_run(scenario: str, trigger: str = "dashboard") -> int:
@@ -74,10 +74,8 @@ def execute_reliability_run(run_id: int) -> dict[str, object]:
             poll_outbox_event(run_id)
         elif scenario == "concurrent_consume":
             if get_engine().dialect.name == "sqlite":
-                pending_order_id = pending_outbox_order_for_run(run_id)
-                record_reliability_event(run_id, "poll", "Outbox 轮询发现待消费事件（本地串行仿真双消费者）", order_id=pending_order_id, pending_count=1)
-                deliver_reward_once(run_id, pending_order_id)
-                deliver_reward_once(run_id, pending_order_id)
+                poll_outbox_event(run_id)
+                poll_outbox_event(run_id)
             else:
                 _schedule_concurrent_outbox_pollers(run_id, player_id)
                 return get_reliability_run(run_id) or {}

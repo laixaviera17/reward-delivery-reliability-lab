@@ -17,6 +17,10 @@ def test_reliability_experiments_preserve_single_wallet_effect(scenario: str):
     assert report["summary"]["actual"]["balance"] == 100
     assert report["summary"]["actual"]["delivery_statuses"] == ["delivered"]
     assert any(event["kind"] == "poll" for event in report["events"])
+    if scenario == "concurrent_consume":
+        claims = [event for event in report["events"] if event["kind"] == "claim"]
+        assert len(claims) == 1
+        assert any(event["kind"] == "poll" and event["payload"].get("order_id") is None for event in report["events"])
     assert get_reliability_run(run_id) == report
 
 

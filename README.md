@@ -23,13 +23,13 @@ docker compose up --build
 ```text
 请求（幂等键）
   -> MySQL 事务：delivery_order + delivery_outbox_event（status=pending）
-  -> Outbox 轮询任务扫描 pending 事件，经 Redis/Celery 执行副作用
+  -> Outbox 轮询任务以条件更新领取 pending 事件，经 Redis/Celery 执行副作用
   -> delivery_wallet_ledger（order_id 唯一）
   -> 玩家余额变更
   -> 断言订单、Outbox、账本、余额与状态
 ```
 
-订单与 Outbox 在一个事务中创建。副作用不由实验编排器直接指定 `order_id`，而是由 **Outbox 轮询任务**查询 `status='pending'` 后再执行。账本 `order_id` 唯一约束是余额副作用边界。
+订单与 Outbox 在一个事务中创建。副作用不由实验编排器直接指定 `order_id`，而是由 **Outbox 轮询任务**以 `pending -> processing` 条件更新领取后再执行。账本 `order_id` 唯一约束仍是余额副作用边界；领取协议的取舍见 [ADR 0001](docs/adr/0001-outbox-claim-boundary.md)。
 
 ## 实验场景
 
