@@ -30,14 +30,19 @@ def main() -> int:
         return 2
 
     initialize_database()
-    passed = detected_dedupe = failed = 0
+    passed = failed = claimed_once = empty_claim = 0
     samples: list[dict[str, object]] = []
 
     for index in range(args.runs):
         report = _run_once()
         status = str(report["status"])
         events = report.get("events") or []
-        has_dedupe = any(event["kind"] == "dedupe" for event in events)
+        claim_events = [event for event in events if event["kind"] == "claim"]
+        has_single_claim = len(claim_events) == 1
+        has_empty_claim = any(
+            event["kind"] == "poll" and event.get("payload", {}).get("order_id") is None
+            for event in events
+        )
         poll_task_ids = {
             event["payload"].get("task_id")
             for event in events
@@ -47,13 +52,16 @@ def main() -> int:
             passed += 1
         else:
             failed += 1
-        if has_dedupe:
-            detected_dedupe += 1
+        if has_single_claim:
+            claimed_once += 1
+        if has_empty_claim:
+            empty_claim += 1
         samples.append(
             {
                 "run_id": report["run_id"],
                 "status": status,
-                "dedupe_detected": has_dedupe,
+                "claim_count": len(claim_events),
+                "empty_claim_observed": has_empty_claim,
                 "poll_task_ids": sorted(poll_task_ids),
                 "balance": (report.get("summary") or {}).get("actual", {}).get("balance"),
             }
@@ -64,8 +72,11 @@ def main() -> int:
         "runs": args.runs,
         "passed": passed,
         "failed": failed,
-        "dedupe_detected_runs": detected_dedupe,
-        "dedupe_detection_rate": round(detected_dedupe / args.runs * 100, 1) if args.runs else 0,
+        "single_claim_runs": claimed_once,
+        "single_claim_rate": round(claimed_once / args.runs * 100, 1) if args.runs else 0,
+        "empty_claim_runs": empty_claim,
+        "empty_claim_rate": round(empty_claim / args.runs * 100, 1) if args.runs else 0,
+        "wallet_invariant_pass_rate": round(passed / args.runs * 100, 1) if args.runs else 0,
         "samples": samples,
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))

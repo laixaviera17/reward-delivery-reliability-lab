@@ -35,10 +35,9 @@ def test_concurrent_outbox_poll_via_celery_chord(integration_ready):
     task_ids = {event["payload"].get("task_id") for event in poll_events if event["payload"].get("task_id")}
     assert len(task_ids) >= 2
 
-    # Without artificial SLEEP, the second poller may either hit ledger dedupe or find no
-    # pending event after the first consumer finished. Either path must leave balance=100.
+    # Conditional claim gives ownership to exactly one poller. The other poller must
+    # observe that no event remains claimable, while the wallet remains correct.
     outcomes = {event["kind"] for event in report["events"]}
     assert "effect" in outcomes
-    assert "dedupe" in outcomes or any(
-        event["kind"] == "poll" and event["payload"].get("order_id") is None for event in poll_events
-    ) or any(event["message"].startswith("Outbox 轮询未发现") for event in poll_events)
+    assert len([event for event in report["events"] if event["kind"] == "claim"]) == 1
+    assert any(event["payload"].get("order_id") is None for event in poll_events)

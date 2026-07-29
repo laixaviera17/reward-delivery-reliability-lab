@@ -6,7 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from .database import connect, initialize_database
-from .outbox import claim_pending_outbox_order, list_pending_outbox_orders, release_outbox_claim
+from .outbox import claim_pending_outbox_order, release_outbox_claim
 from .reliability_events import record_reliability_event, utc_now
 from .reliability_scenarios import REWARD_GEMS
 
@@ -139,12 +139,3 @@ def deliver_without_ledger_guard(run_id: int, order_id: str) -> None:
         )
         _complete_delivery(connection, order_id)
     record_reliability_event(run_id, "control", "对照消费者完成一次未受账本保护的余额变更", order_id=order_id)
-
-
-def pending_outbox_order_for_run(run_id: int) -> str:
-    """Return the first pending order for the local SQLite dual-consumer simulation."""
-    initialize_database()
-    pending = list_pending_outbox_orders(run_id)
-    if not pending:
-        raise AssertionError("并发消费场景缺少 pending Outbox 事件")
-    return pending[0]

@@ -92,12 +92,12 @@ python3 -m uvicorn app.main:app --reload
 ```bash
 make test              # 单元测试（SQLite）
 make test-integration  # MySQL + Redis + Celery chord（需 compose 已启动）
-make benchmark         # 并行争用基准，输出 dedupe_detection_rate
+make benchmark         # 并行争用基准，输出领取与钱包不变量指标
 ```
 
 - **单元测试**：SQLite 同步 Outbox 轮询，快速回归
 - **集成测试**：与 Docker 演示同一条 Celery chord 路径
-- **基准脚本**：统计天然竞态下的 dedupe 命中率，**不使用 SLEEP** 人为放大冲突
+- **基准脚本**：统计单次领取率、未领取观察率与钱包不变量通过率，**不使用 SLEEP** 人为放大冲突
 
 并发场景通过标准是**钱包不变量**（账本 1、余额 100），不是「必现两次消费尝试」。条件领取确保只有一个轮询拥有事件；另一个轮询会发现没有可领取的 pending 事件，这同样是通过。
 
