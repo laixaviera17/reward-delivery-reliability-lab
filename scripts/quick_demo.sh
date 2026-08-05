@@ -23,4 +23,4 @@ echo "2) 先运行「账本守卫失效对照」，期望状态: detected（琥�
 echo "3) 再运行「并行消费尝试」，在时间线查看两个 Outbox 轮询 task_id"
 echo
 echo "可选 API 快速验证:"
-echo "  curl -X POST http://127.0.0.1:8000/reliability/runs -H 'Content-Type: application/json' -d '{\"scenario\":\"guard_disabled_control\"}'"
+echo "  curl -X POST http://127.0.0.1:8000/api/v1/reliability/runs -H 'Content-Type: application/json' -d '{\"scenario\":\"guard_disabled_control\"}'"
