@@ -2,10 +2,10 @@ services:
   mysql:
     image: mysql:8.4
     environment:
-      MYSQL_DATABASE: reliability_lab
-      MYSQL_USER: reliability_lab
-      MYSQL_PASSWORD: reliability_lab_dev
-      MYSQL_ROOT_PASSWORD: root_dev_password
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-reliability_lab}
+      MYSQL_USER: ${MYSQL_USER:-reliability_lab}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-reliability_lab_dev}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev_password}
     ports:
       - "3307:3306"
     volumes:
@@ -19,7 +19,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_HOST_PORT:-6380}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -30,10 +30,10 @@ services:
     build: .
     command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
     environment: &app_environment
-      DATABASE_URL: mysql+pymysql://reliability_lab:reliability_lab_dev@mysql:3306/reliability_lab
-      EXECUTION_MODE: celery
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      DATABASE_URL: ${DATABASE_URL:-mysql+pymysql://reliability_lab:reliability_lab_dev@mysql:3306/reliability_lab}
+      EXECUTION_MODE: ${EXECUTION_MODE:-celery}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
     ports:
       - "8000:8000"
     depends_on:
