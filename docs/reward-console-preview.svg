@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">RewardOps 奖励发放控制台</title>
+  <desc id="desc">展示导航、运行指标、最近发放批次和审计时间线的企业后台界面</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f7fb"/><stop offset="1" stop-color="#eef2f7"/></linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5b5bd6"/><stop offset="1" stop-color="#7c67e8"/></linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#27314f" flood-opacity=".08"/></filter>
+  </defs>
+  <rect width="1440" height="820" rx="22" fill="url(#bg)"/>
+  <rect width="260" height="820" rx="22" fill="#111827"/>
+  <rect x="32" y="32" width="46" height="46" rx="13" fill="url(#brand)"/>
+  <text x="55" y="63" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="23" font-weight="700">R</text>
+  <text x="94" y="53" fill="white" font-family="Arial,sans-serif" font-size="22" font-weight="700">RewardOps</text>
+  <text x="94" y="72" fill="#94a3b8" font-family="Arial,sans-serif" font-size="12">可靠奖励发放平台</text>
+  <g font-family="Arial,'PingFang SC',sans-serif" font-size="15">
+    <rect x="20" y="118" width="220" height="48" rx="12" fill="#252b3c"/><circle cx="46" cy="142" r="5" fill="#8b7cf6"/><text x="64" y="148" fill="white">运行概览</text>
+    <circle cx="46" cy="198" r="5" fill="#64748b"/><text x="64" y="204" fill="#cbd5e1">发放批次</text>
+    <circle cx="46" cy="254" r="5" fill="#64748b"/><text x="64" y="260" fill="#cbd5e1">创建批次</text>
+    <circle cx="46" cy="310" r="5" fill="#f59e0b"/><text x="64" y="316" fill="#cbd5e1">失败恢复</text>
+    <circle cx="46" cy="366" r="5" fill="#22c55e"/><text x="64" y="372" fill="#cbd5e1">账本与审计</text>
+  </g>
+  <rect x="20" y="674" width="220" height="116" rx="16" fill="#1f2937"/>
+  <text x="38" y="705" fill="#8b7cf6" font-family="Arial,sans-serif" font-size="11" font-weight="700">RELIABILITY LAB</text>
+  <text x="38" y="734" fill="white" font-family="Arial,'PingFang SC',sans-serif" font-size="14">并发消费与故障实验</text>
+  <text x="38" y="766" fill="#94a3b8" font-family="Arial,'PingFang SC',sans-serif" font-size="12">打开验证实验室 ↗</text>
+  <text x="304" y="48" fill="#64748b" font-family="Arial,sans-serif" font-size="11" font-weight="700">PORTFOLIO ENVIRONMENT</text>
+  <text x="304" y="76" fill="#111827" font-family="Arial,'PingFang SC',sans-serif" font-size="18" font-weight="700">奖励发放控制台</text>
+  <rect x="1244" y="38" width="148" height="38" rx="19" fill="#e8f8ef"/><circle cx="1267" cy="57" r="5" fill="#22c55e"/><text x="1280" y="62" fill="#167a43" font-family="Arial,sans-serif" font-size="13">异步 · mysql</text>
+  <text x="304" y="128" fill="#6d5dd3" font-family="Arial,sans-serif" font-size="11" font-weight="700">DELIVERY OVERVIEW</text>
+  <text x="304" y="171" fill="#111827" font-family="Arial,'PingFang SC',sans-serif" font-size="34" font-weight="700">运行概览</text>
+  <text x="304" y="200" fill="#64748b" font-family="Arial,'PingFang SC',sans-serif" font-size="15">批次状态、成功率与奖励金额均来自真实唯一账本</text>
+  <rect x="1244" y="142" width="148" height="44" rx="12" fill="url(#brand)"/><text x="1318" y="170" text-anchor="middle" fill="white" font-family="Arial,'PingFang SC',sans-serif" font-size="14" font-weight="700">＋ 创建发放批次</text>
+  <g filter="url(#shadow)" font-family="Arial,'PingFang SC',sans-serif">
+    <rect x="304" y="236" width="250" height="126" rx="17" fill="white"/><text x="328" y="270" fill="#64748b" font-size="13">发放批次</text><text x="328" y="319" fill="#111827" font-size="34" font-weight="700">24</text><text x="328" y="342" fill="#64748b" font-size="12">2 个处理中</text>
+    <rect x="574" y="236" width="250" height="126" rx="17" fill="white"/><text x="598" y="270" fill="#64748b" font-size="13">成功率</text><text x="598" y="319" fill="#111827" font-size="34" font-weight="700">98.6%</text><text x="598" y="342" fill="#22a65a" font-size="12">1,842 / 1,868 条</text>
+    <rect x="844" y="236" width="250" height="126" rx="17" fill="white"/><text x="868" y="270" fill="#64748b" font-size="13">需要关注</text><text x="868" y="319" fill="#111827" font-size="34" font-weight="700">3</text><text x="868" y="342" fill="#d97706" font-size="12">失败中心待处理</text>
+    <rect x="1114" y="236" width="278" height="126" rx="17" fill="white"/><text x="1138" y="270" fill="#64748b" font-size="13">已入账宝石</text><text x="1138" y="319" fill="#111827" font-size="34" font-weight="700">1,284,500</text><text x="1138" y="342" fill="#64748b" font-size="12">以唯一账本为统计口径</text>
+  </g>
+  <g filter="url(#shadow)" font-family="Arial,'PingFang SC',sans-serif">
+    <rect x="304" y="390" width="720" height="380" rx="18" fill="white"/>
+    <text x="330" y="430" fill="#111827" font-size="18" font-weight="700">最近发放批次</text><text x="330" y="453" fill="#64748b" font-size="12">草稿、处理中、部分失败与完成状态</text>
+    <line x1="330" y1="484" x2="998" y2="484" stroke="#e5e7eb"/>
+    <g fill="#94a3b8" font-size="11"><text x="330" y="510">批次</text><text x="628" y="510">状态</text><text x="740" y="510">成功/失败</text><text x="875" y="510">奖励总量</text></g>
+    <g font-size="13"><text x="330" y="555" fill="#111827" font-weight="700">八月登录活动奖励</text><rect x="622" y="537" width="72" height="26" rx="13" fill="#e8f8ef"/><text x="658" y="555" text-anchor="middle" fill="#168249">已完成</text><text x="740" y="555" fill="#334155">850 / 0</text><text x="875" y="555" fill="#111827" font-weight="700">420,000</text>
+    <text x="330" y="617" fill="#111827" font-weight="700">版本更新补偿</text><rect x="622" y="599" width="80" height="26" rx="13" fill="#fff5df"/><text x="662" y="617" text-anchor="middle" fill="#b56b00">部分失败</text><text x="740" y="617" fill="#334155">491 / 3</text><text x="875" y="617" fill="#111827" font-weight="700">247,000</text>
+    <text x="330" y="679" fill="#111827" font-weight="700">公会赛季结算</text><rect x="622" y="661" width="72" height="26" rx="13" fill="#eceafe"/><text x="658" y="679" text-anchor="middle" fill="#6352c7">处理中</text><text x="740" y="679" fill="#334155">501 / 0</text><text x="875" y="679" fill="#111827" font-weight="700">312,500</text></g>
+    <line x1="330" y1="582" x2="998" y2="582" stroke="#f0f2f5"/><line x1="330" y1="644" x2="998" y2="644" stroke="#f0f2f5"/>
+  </g>
+  <g filter="url(#shadow)" font-family="Arial,'PingFang SC',sans-serif">
+    <rect x="1044" y="390" width="348" height="380" rx="18" fill="white"/>
+    <text x="1070" y="430" fill="#111827" font-size="18" font-weight="700">审计时间线</text><text x="1070" y="453" fill="#64748b" font-size="12">最近系统与人工操作</text>
+    <line x1="1082" y1="494" x2="1082" y2="716" stroke="#e1e5ed" stroke-width="2"/>
+    <circle cx="1082" cy="510" r="7" fill="#22c55e"/><text x="1104" y="507" fill="#111827" font-size="13" font-weight="700">批次全部发放成功</text><text x="1104" y="528" fill="#94a3b8" font-size="11">batch.completed · system</text>
+    <circle cx="1082" cy="578" r="7" fill="#6d5dd3"/><text x="1104" y="575" fill="#111827" font-size="13" font-weight="700">操作人员发起安全重试</text><text x="1104" y="596" fill="#94a3b8" font-size="11">item.retry_requested · reviewer</text>
+    <circle cx="1082" cy="646" r="7" fill="#f59e0b"/><text x="1104" y="643" fill="#111827" font-size="13" font-weight="700">奖励发放失败</text><text x="1104" y="664" fill="#94a3b8" font-size="11">item.failed · system</text>
+    <circle cx="1082" cy="714" r="7" fill="#64748b"/><text x="1104" y="711" fill="#111827" font-size="13" font-weight="700">批次已提交</text><text x="1104" y="732" fill="#94a3b8" font-size="11">batch.submitted · admin</text>
+  </g>
+</svg>
