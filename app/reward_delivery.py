@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
-from .database import connect, initialize_database
+from .database import connect
 from .outbox import claim_pending_outbox_order, release_outbox_claim
 from .reliability_events import record_reliability_event, utc_now
 from .reliability_scenarios import REWARD_GEMS
@@ -25,12 +25,18 @@ def create_experiment_player(run_id: int) -> str:
 def request_reward(run_id: int, player_id: str, idempotency_key: str) -> tuple[str, bool]:
     """Persist the business order and its Outbox event in one database transaction."""
     with connect() as connection:
-        existing = connection.execute(
-            text("SELECT order_id FROM delivery_orders WHERE idempotency_key = :key"),
-            {"key": idempotency_key},
-        ).scalar_one_or_none()
+        existing = (
+            connection.execute(
+                text("SELECT order_id, player_id FROM delivery_orders WHERE idempotency_key = :key"),
+                {"key": idempotency_key},
+            )
+            .mappings()
+            .first()
+        )
         if existing:
-            order_id = str(existing)
+            if str(existing["player_id"]) != player_id:
+                raise ValueError("幂等键已用于不同的奖励请求")
+            order_id = str(existing["order_id"])
             duplicate = True
         else:
             order_id = f"order_{run_id}_{uuid.uuid4().hex[:10]}"
@@ -38,7 +44,14 @@ def request_reward(run_id: int, player_id: str, idempotency_key: str) -> tuple[s
                 text("""INSERT INTO delivery_orders
                     (order_id, run_id, player_id, idempotency_key, reward_gems, status, created_at)
                     VALUES (:order_id, :run_id, :player_id, :idempotency_key, :reward_gems, 'pending', :created_at)"""),
-                {"order_id": order_id, "run_id": run_id, "player_id": player_id, "idempotency_key": idempotency_key, "reward_gems": REWARD_GEMS, "created_at": utc_now()},
+                {
+                    "order_id": order_id,
+                    "run_id": run_id,
+                    "player_id": player_id,
+                    "idempotency_key": idempotency_key,
+                    "reward_gems": REWARD_GEMS,
+                    "created_at": utc_now(),
+                },
             )
             connection.execute(
                 text("""INSERT INTO delivery_outbox_events (order_id, status, attempt_count, created_at)
@@ -46,7 +59,14 @@ def request_reward(run_id: int, player_id: str, idempotency_key: str) -> tuple[s
                 {"order_id": order_id, "created_at": utc_now()},
             )
             duplicate = False
-    record_reliability_event(run_id, "request", "重复请求命中已有订单" if duplicate else "订单与 Outbox 事件在同一事务中创建", order_id=order_id, idempotency_key=idempotency_key, duplicate=duplicate)
+    record_reliability_event(
+        run_id,
+        "request",
+        "重复请求命中已有订单" if duplicate else "订单与 Outbox 事件在同一事务中创建",
+        order_id=order_id,
+        idempotency_key=idempotency_key,
+        duplicate=duplicate,
+    )
     return order_id, duplicate
 
 
@@ -64,13 +84,19 @@ def _complete_delivery(connection, order_id: str) -> None:
 
 def deliver_reward_once(run_id: int, order_id: str, *, lose_acknowledgement: bool = False, task_id: str | None = None) -> str:
     """Apply one delivery attempt; the unique ledger row remains the consumer idempotency boundary."""
-    record_reliability_event(run_id, "consume", "消费者开始处理 Outbox 事件", order_id=order_id, lose_acknowledgement=lose_acknowledgement, task_id=task_id)
+    record_reliability_event(
+        run_id, "consume", "消费者开始处理 Outbox 事件", order_id=order_id, lose_acknowledgement=lose_acknowledgement, task_id=task_id
+    )
     try:
         with connect() as connection:
-            order = connection.execute(
-                text("SELECT player_id, reward_gems FROM delivery_orders WHERE order_id = :order_id"),
-                {"order_id": order_id},
-            ).mappings().one()
+            order = (
+                connection.execute(
+                    text("SELECT player_id, reward_gems FROM delivery_orders WHERE order_id = :order_id"),
+                    {"order_id": order_id},
+                )
+                .mappings()
+                .one()
+            )
             ledger_exists = connection.execute(
                 text("SELECT entry_id FROM delivery_wallet_ledger WHERE order_id = :order_id"),
                 {"order_id": order_id},
@@ -125,10 +151,14 @@ def deliver_without_ledger_guard(run_id: int, order_id: str) -> None:
     """Execute the controlled negative path that mutates balance without a ledger entry."""
     record_reliability_event(run_id, "control", "对照消费者跳过账本守卫并直接执行余额变更", order_id=order_id)
     with connect() as connection:
-        order = connection.execute(
-            text("SELECT player_id, reward_gems FROM delivery_orders WHERE order_id = :order_id"),
-            {"order_id": order_id},
-        ).mappings().one()
+        order = (
+            connection.execute(
+                text("SELECT player_id, reward_gems FROM delivery_orders WHERE order_id = :order_id"),
+                {"order_id": order_id},
+            )
+            .mappings()
+            .one()
+        )
         connection.execute(
             text("UPDATE delivery_outbox_events SET attempt_count = attempt_count + 1 WHERE order_id = :order_id"),
             {"order_id": order_id},

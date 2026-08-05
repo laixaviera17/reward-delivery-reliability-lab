@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .reliability import execute_reliability_run, finalize_concurrent_reliability_run, poll_outbox_event
+from .reward_batches import process_reward_batch
 from .task_queue import celery_app
 
 
@@ -17,3 +18,8 @@ def poll_outbox_event_task(run_id: int) -> str:
 @celery_app.task(name="app.tasks.finalize_concurrent_reliability_run")
 def finalize_concurrent_reliability_run_task(_poller_results: list[str], run_id: int, player_id: str) -> dict[str, object]:
     return finalize_concurrent_reliability_run(run_id, player_id)
+
+
+@celery_app.task(name="app.tasks.process_reward_batch")
+def process_reward_batch_task(batch_id: str) -> dict[str, object]:
+    return process_reward_batch(batch_id)

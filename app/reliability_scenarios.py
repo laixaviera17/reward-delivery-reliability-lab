@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 REWARD_GEMS = 100
 
 SCENARIOS = {

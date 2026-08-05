@@ -13,8 +13,8 @@ from sqlalchemy import text
 
 from .database import connect, get_engine, initialize_database
 from .reliability_events import record_reliability_event, utc_now
-from .reliability_reports import finish_reliability_run, get_reliability_run, list_reliability_runs, mark_run_failed, reliability_trend
-from .reliability_scenarios import SCENARIOS, available_reliability_scenarios
+from .reliability_reports import finish_reliability_run, get_reliability_run, mark_run_failed
+from .reliability_scenarios import SCENARIOS
 from .reward_delivery import create_experiment_player, deliver_without_ledger_guard, poll_outbox_event, request_reward
 
 
@@ -55,11 +55,16 @@ def execute_reliability_run(run_id: int) -> dict[str, object]:
     """Orchestrate the selected scenario; delivery and assertions remain delegated."""
     initialize_database()
     with connect() as connection:
-        run = connection.execute(text("SELECT scenario FROM reliability_runs WHERE run_id = :run_id"), {"run_id": run_id}).mappings().first()
+        run = (
+            connection.execute(text("SELECT scenario FROM reliability_runs WHERE run_id = :run_id"), {"run_id": run_id}).mappings().first()
+        )
         if not run:
             raise ValueError("可靠性实验不存在")
         scenario = str(run["scenario"])
-        connection.execute(text("UPDATE reliability_runs SET status = 'running', started_at = :started_at, error_message = NULL WHERE run_id = :run_id"), {"started_at": utc_now(), "run_id": run_id})
+        connection.execute(
+            text("UPDATE reliability_runs SET status = 'running', started_at = :started_at, error_message = NULL WHERE run_id = :run_id"),
+            {"started_at": utc_now(), "run_id": run_id},
+        )
     try:
         player_id = create_experiment_player(run_id)
         record_reliability_event(run_id, "setup", "创建实验玩家，初始余额为 0", player_id=player_id, initial_balance=0)
